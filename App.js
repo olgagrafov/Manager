@@ -1,20 +1,28 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+//import * as React from "react";
+//import { StatusBar } from 'expo-status-bar';
+import { StyleSheet, BlurView } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import SignedReceipts from './src/screens/SignedReceipts';
+import UnsignedReceipts from './src/screens/UnsignedReceipts';
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open  working on your app!!!!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Tab.Navigator initialRouteName="Home">
+        <Tab.Screen name="Signed Receipts" component={SignedReceipts} />
+        <Tab.Screen name="Unsigned Receipts" component={UnsignedReceipts} />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+/*
+<Tab.Navigator screenOptions={{
+        tabBarStyle: { position: 'absolute' },
+        tabBarBackground: () => (
+          <BlurView tint="light" intensity={100} style={StyleSheet.absoluteFill} />
+        ),
+    }}>
+*/
