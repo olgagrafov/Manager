@@ -15,7 +15,7 @@ class ListOfReceipts extends Component {
       signature: route.params.signature,
     };
    }
-
+  
    async componentDidMount() {
 
     const db = getFirestore(appDB);
@@ -43,8 +43,9 @@ class ListOfReceipts extends Component {
       isLoading: false,
    });
 
-}
+  }
   
+
   render() {
     if(this.state.isLoading){
       return(
@@ -55,6 +56,7 @@ class ListOfReceipts extends Component {
     }    
     return (
       <>
+     
       {
           this.state.invoicesArr.length > 0
               ? <ItemsContainer items={this.state.invoicesArr} />
