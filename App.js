@@ -3,8 +3,7 @@
 import { StyleSheet, BlurView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import SignedReceipts from './src/screens/SignedReceipts';
-import UnsignedReceipts from './src/screens/UnsignedReceipts';
+import ListOfReceipts from './src/screens/ListOfReceipts';
 
 const Tab = createBottomTabNavigator();
 
@@ -12,8 +11,8 @@ export default function App() {
   return (
     <NavigationContainer>
       <Tab.Navigator initialRouteName="Home">
-        <Tab.Screen name="Signed Receipts" component={SignedReceipts} />
-        <Tab.Screen name="Unsigned Receipts" component={UnsignedReceipts} />
+        <Tab.Screen name="Signed Receipts" component={ListOfReceipts} initialParams={{ signature: true }} />
+        <Tab.Screen name="Unsigned Receipts" component={ListOfReceipts} initialParams={{ signature: false }} />
       </Tab.Navigator>
     </NavigationContainer>
   );
