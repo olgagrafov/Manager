@@ -1,5 +1,6 @@
 import React, { Component} from 'react';
-import {  View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import { NativeModules } from "react-native";
+import { Text, StyleSheet, TouchableOpacity} from 'react-native';
 import { getFirestore, doc, setDoc  } from 'firebase/firestore/lite';
 import appDB from '../database/firebase';
 import Receipt from './Receipt';
@@ -43,25 +44,24 @@ class Item extends Component {
         //     invoiceDate: null,
         //     hasSignature: false,
         //    }); 
+
+        NativeModules.DevSettings.reload();
 }
 
   render() {
-            return (
-                <>
-                {/* // <View key={this.props.index}> */}
-                    <Text style={styles.itemtext}>
-                        {this.props.item.customerName}
+        return (
+            <>
+                <Text style={styles.itemtext}>
+                    {this.props.item.customerName}
+                </Text>
+                {this.state.isShow && <Receipt item={this.props.item}  handleSave={this.handleSaveReceipt}/>}
+                <TouchableOpacity onPress={this.showOrHideDitals}>
+                    <Text style={styles.button}>
+                        {this.state.isShow ? "hide ditals" : "ditals"}
                     </Text>
-                    {this.state.isShow && <Receipt item={this.props.item}  handleSave={this.handleSaveReceipt}/>}
-                     <TouchableOpacity
-                        onPress={this.showOrHideDitals}>
-                        <Text style={styles.button}>
-                            {this.state.isShow ? "hide ditals" : "ditals"}
-                        </Text>
-                      </TouchableOpacity>                     
-                {/* // </View> */}
-                </>
-            )
+                </TouchableOpacity>                     
+            </>
+        )
    }
       
 }
