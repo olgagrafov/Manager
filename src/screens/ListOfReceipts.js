@@ -12,7 +12,7 @@ class ListOfReceipts extends Component {
     this.state = {
       isLoading: true,
       invoicesArr: [],
-      signature: route.params.signature,
+      signature: route .params.signature,
     };
    }
   
@@ -55,15 +55,18 @@ class ListOfReceipts extends Component {
       );
     }    
     return (
-      <>
-     
+      <ScrollView>    
       {
           this.state.invoicesArr.length > 0
               ? <ItemsContainer items={this.state.invoicesArr} />
               : <Text>No items</Text>
         }
-      </>
+      </ScrollView>
     );
+      {/* <Button
+          title="Go to Details"
+          onPress={() => this.props.navigation.navigate('Add Receipts')}
+        /> */}
   }
 }
 const styles = StyleSheet.create({

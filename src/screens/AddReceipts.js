@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
-import { NativeModules } from "react-native";
+import { NativeModules, ScrollView } from "react-native";
+import Signature from "react-native-signature-canvas";
 import { HStack  } from "@react-native-material/core";
 import { Wrap } from 'react-native-flex-layout';
-import { TextInput, Text, Button } from 'react-native-paper';
+import { TextInput, Text, Button, IconButton } from 'react-native-paper';
 import { Calendar  } from 'react-native-calendars';
 import { StyleSheet,  View, TouchableHighlight } from 'react-native';
 import { endAt } from 'firebase/firestore/lite';
@@ -13,6 +14,7 @@ let _month = _date.getMonth() + 1;
 _month = _month < 10 ? `0${_month}`: _month;
 let _day = _date.getDate() < 10 ? `0${ _date.getDate()}` : _date.getDate();
 let minDate =`${_date.getFullYear()}-${_month}-${_day}`;
+let showDate = `${_day}/${_month}/${_date.getFullYear()}`;
 
 class AddReceipts extends Component {
     
@@ -22,7 +24,9 @@ class AddReceipts extends Component {
         invoiceAmount: '',
         invoiceDate: '',
         markedDates: '',
-        minDate: minDate
+        minDate: minDate,
+        showCalendar: false,
+        showDate: showDate
     }; 
 
 //     componentDidMount(){
@@ -37,61 +41,98 @@ class AddReceipts extends Component {
 //             }; 
 //     }
 
+
     handleChange = (e, stateName) => {
         this.setState({
             [stateName]: e.nativeEvent.text
         });
-      }
-    
-    handleSubmit = () => {
-        console.log(this.state.customerName, this.state.details, this.state.invoiceAmount)
-       NativeModules.DevSettings.reload();
-      }  
+      };
+   
+    handleEmpty = () => {
+        alert("didn't sign");
+    };
 
-    selectDates = (day) => {
-       this.setState({
-            invoiceDate : day.timestamp,
-            markedDates: day.dateString
-        })         
+    
+    handleSave = (signature) => {
+        console.log("save")
+        // this.setState({
+        //     isShow: false,
+        //     signature: signature,
+        // });
+        // this.setDataFB();
     }
 
+    handleSubmit = () => {
+        console.log(this.state.customerName, this.state.details, this.state.invoiceAmount)
+        NativeModules.DevSettings.reload();
+    };
+
+    selectDates = (day) => {
+        let _day = day.day < 10 ? `0${ day.day}` : day.day;
+        let _month = day.month < 10 ? `0${day.month}`: day.month;   
+        let showDate = `${_day}/${_month}/${day.year}`;
+        this.setState({
+            invoiceDate : day.timestamp,
+            markedDates: day.dateString,
+            showDate: showDate,
+        });     
+    }
+   
 render() {
     return (
         <View style={styles.container}>
-            {/* <></> */}
-            <TextInput style={styles.input}
-                label = "Customer Name" maxLength = {20} 
-                value = {this.state.customerName}
-                onChange = { e => this.handleChange(e , 'customerName')} /> 
-    
-            <TextInput style={styles.input}
-                label = "Invoice Amount" 
-                keyboardType = "numeric" 
-                maxLength = {5}
-                onChange = { e => this.handleChange(e , 'invoiceAmount')} />
-            <Wrap m={3} items="center" spacing={5}>
-                <Text variant="bodyLarge">{this.state.minDate}</Text>
-                <Button mode="text" textColor="blue" onPress={() => console.log('Pressed')}>
-                    change the date
-                </Button>    
-            </Wrap>
-             {/* <Calendar
-                minDate = {this.state.minDate}
-                onDayPress = {day => this.selectDates(day)}
-                markedDates ={{[this.state.markedDates] : styles.selectedDate}}
-                style={styles.calendarStyle}
-                theme={styles.theme}
-            /> */}
-            <TextInput style={styles.input}
-                label = "Details" 
-                value = {this.state.details}
-                multiline = {true} 
-                numberOfLines = {2}
-                maxLength = {100} 
-                onChange = { e => this.handleChange(e , 'details')} />
+            <ScrollView>
+                <TextInput style={styles.input}
+                    label = "Customer Name" maxLength = {20} 
+                    value = {this.state.customerName}
+                    onChange = { e => this.handleChange(e , 'customerName')} /> 
+        
+                <TextInput style={styles.input}
+                    label = "Invoice Amount" 
+                    keyboardType = "numeric" 
+                    maxLength = {5}
+                    onChange = { e => this.handleChange(e , 'invoiceAmount')} />
 
-            
+                <Wrap m={5} items="center" spacing={1}>
+                    <Text variant="bodyMedium">{this.state.showDate}</Text>
+                    <Button mode="text" textColor="blue" onPress={() => this.setState({ showCalendar: true})}>
+                        change the date
+                    </Button>   
+                    { this.state.showCalendar &&                   
+                        <IconButton
+                            icon="close"
+                            size={26}
+                            onPress={() => this.setState({ showCalendar: false})}
+                        />   
+                    }
+                </Wrap>
+
+                { this.state.showCalendar && 
+                    <Calendar
+                        minDate = {this.state.minDate}
+                        onDayPress = {day => this.selectDates(day)}
+                        markedDates ={{[this.state.markedDates] : styles.selectedDate}}
+                        style={styles.calendarStyle}
+                        theme={styles.theme}
+                /> }
+
+                <TextInput style={styles.input}
+                    label = "Details" 
+                    value = {this.state.details}
+                    multiline = {true} 
+                    numberOfLines = {3}
+                    maxLength = {100} 
+                    onChange = { e => this.handleChange(e , 'details')} />
+            </ScrollView>
                 
+            <Signature
+                onOK={this.handleSave}
+                onEmpty={this.handleEmpty}
+                descriptionText="Sign"
+                clearText="Clear"
+                confirmText="Save"
+                autoClear={true}
+            />
            
             <TouchableHighlight
                     style = {styles.button}
@@ -103,6 +144,12 @@ render() {
                     Save
                 </Text>
             </TouchableHighlight>
+
+             {/* <IconButton
+                    icon="share"
+                    size={20}
+                    onPress={() => console.log('Pressed')}
+                />    */}
         </View>
     );}
 
@@ -134,9 +181,10 @@ const styles = StyleSheet.create({
       },
       calendarStyle: {
         borderWidth: 1,
-        borderRadius: 5,
+        borderRadius: 9,
         borderColor: 'gray',
-        height: 350
+        height: 350,
+        marginBottom: 10,
       },
       theme: {
         backgroundColor: '#ffffff',

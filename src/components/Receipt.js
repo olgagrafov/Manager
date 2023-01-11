@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text ,Image, View} from 'react-native';
-import Signature from "react-native-signature-canvas";
+
 
 class Receipt extends Component {
   state = {
@@ -19,39 +19,19 @@ class Receipt extends Component {
     })   
   }
 
- handleEmpty = () => {
-    alert("didn't sign");
-};
 
- style = `.m-signature-pad--footer
-.button {
-  background-color: red;
-  color: #FFF;
-}`;
-  
   render() {
     return(
       <>
         <Text  style={styles.ditalstext}> invoice date: {this.state.invoiceDate} </Text>
         <Text style={styles.ditalstext}> details: {this.props.item.details} </Text> 
-        {this.props.item.hasSignature == true ?
-          <View style={styles.container}>
-            <Image
+        <View style={styles.container}>
+          <Image
               resizeMode={"contain"}
               style={styles.image}
               source={{ uri: decodeURI(this.props.item.signature) }}
-            />
-          </View>
-        :
-          <Signature
-            onOK={this.props.handleSave}
-            onEmpty={this.handleEmpty}
-            descriptionText="Sign"
-            clearText="Clear"
-            confirmText="Save"
-            autoClear={true}
           />
-        } 
+        </View>
       </>
     )
   }

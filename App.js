@@ -10,7 +10,7 @@ export default function App() {
   
   return (
     <NavigationContainer>
-      <Tab.Navigator initialRouteName="Home">
+      <Tab.Navigator initialRouteName="Signed Receipts">
         <Tab.Screen name="Signed Receipts" component={ListOfReceipts} initialParams={{ signature: true }} 
           options={{
             tabBarIcon: ({color, size, focused}) => {
@@ -31,7 +31,6 @@ export default function App() {
                 <MaterialIcon
                   color= {!focused ? '#234655' : '#3F52CD'}
                   name="edit"
-                //  name="share"
                   size={20}
                 />
               );
