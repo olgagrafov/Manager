@@ -12,7 +12,7 @@ class ListOfReceipts extends Component {
     this.state = {
       isLoading: true,
       invoicesArr: [],
-      signature: route .params.signature,
+      signature: route.params.signature,
     };
    }
   

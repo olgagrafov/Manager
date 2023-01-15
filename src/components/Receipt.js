@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { StyleSheet, Text ,Image, View} from 'react-native';
+import { Timestamp } from 'firebase/firestore';
 
 
 class Receipt extends Component {
@@ -8,12 +9,14 @@ class Receipt extends Component {
 };
  
   componentDidMount(){
-   // console.log(this.props.item)
-    const date = this.props.item.invoiceDate.toDate().getDate();
-    let month = this.props.item.invoiceDate.toDate().getMonth() + 1;
+    const fbDate =  Timestamp.fromMillis(this.props.item.invoiceDate).toDate();
+    let date =fbDate.getDate();
+    date = date < 10 ? "0" + date : date;
+    let month = fbDate.getMonth() + 1;
     month = month < 10 ? "0" + month : month;
-    const year = this.props.item.invoiceDate.toDate().getFullYear();
+    const year = fbDate.getFullYear();
     const fullDate = date + "/" + month + "/" + year;
+   
     this.setState({
       invoiceDate : fullDate,
     })   
@@ -26,11 +29,12 @@ class Receipt extends Component {
         <Text  style={styles.ditalstext}> invoice date: {this.state.invoiceDate} </Text>
         <Text style={styles.ditalstext}> details: {this.props.item.details} </Text> 
         <View style={styles.container}>
-          <Image
+        {this.props.item.hasSignature &&
+        <Image
               resizeMode={"contain"}
               style={styles.image}
               source={{ uri: decodeURI(this.props.item.signature) }}
-          />
+          /> }
         </View>
       </>
     )

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { NativeModules, ScrollView } from "react-native";
-import Signature from "react-native-signature-canvas";
-import { HStack  } from "@react-native-material/core";
+import { NativeModules } from "react-native";
+import { ScrollView, Image } from "react-native";
 import { Wrap } from 'react-native-flex-layout';
 import { TextInput, Text, Button, IconButton } from 'react-native-paper';
 import { Calendar  } from 'react-native-calendars';
-import { StyleSheet,  View, TouchableHighlight } from 'react-native';
-import { endAt } from 'firebase/firestore/lite';
+import { StyleSheet,  View } from 'react-native';
+import { getFirestore, doc, setDoc,collection  } from 'firebase/firestore/lite';
+import appDB from '../database/firebase';
 
 
 let _date = new Date(Date.now()); 
@@ -22,51 +22,13 @@ class AddReceipts extends Component {
         customerName: '',
         details: '',
         invoiceAmount: '',
-        invoiceDate: '',
+        invoiceDate: Date.now(),
         markedDates: '',
         minDate: minDate,
         showCalendar: false,
         showDate: showDate
     }; 
-
-//     componentDidMount(){
-//         let dat = new Date(Date.now()); 
-//   // console.log(dat.getDate(), dat.getMonth() + 1, dat.getFullYear()); {'2023-01-01'}
-//         let minDate = dat.getFullYear() + '-' + dat.getMonth() + 1 + '-08' //+ dat.getDate();
-//         console.log(minDate)
-//             this.setState  = {
-//                 invoiceDate: '',
-//                 markedDates: '',
-//                 minDate: '2023-01-01'//minDate
-//             }; 
-//     }
-
-
-    handleChange = (e, stateName) => {
-        this.setState({
-            [stateName]: e.nativeEvent.text
-        });
-      };
-   
-    handleEmpty = () => {
-        alert("didn't sign");
-    };
-
     
-    handleSave = (signature) => {
-        console.log("save")
-        // this.setState({
-        //     isShow: false,
-        //     signature: signature,
-        // });
-        // this.setDataFB();
-    }
-
-    handleSubmit = () => {
-        console.log(this.state.customerName, this.state.details, this.state.invoiceAmount)
-        NativeModules.DevSettings.reload();
-    };
-
     selectDates = (day) => {
         let _day = day.day < 10 ? `0${ day.day}` : day.day;
         let _month = day.month < 10 ? `0${day.month}`: day.month;   
@@ -77,7 +39,42 @@ class AddReceipts extends Component {
             showDate: showDate,
         });     
     }
+
+    handleChange = (e, stateName) => {
+        this.setState({
+            [stateName]: e.nativeEvent.text
+        });
+      };
    
+
+    handleSubmit = () => {
+        this.setDataFB();
+        NativeModules.DevSettings.reload();
+    };
+
+   setDataFB = async () => {
+        
+        const db = getFirestore(appDB);
+        const docRef = (doc(collection(db, "invoices")));
+        const isSignature = (this.props.route.params ? true : false);
+        const signature =  isSignature ?  encodeURI(this.props.route.params) : "";
+
+        await setDoc(docRef, {  
+                customerName: this.state.customerName,
+                details: this.state.details,
+                invoiceAmount:  this.state.invoiceAmount,
+                invoiceDate: this.state.invoiceDate,
+                hasSignature: isSignature,
+                signature: signature }, 
+            { merge: true })
+            .then(() => {
+                console.log("Document has been updated successfully");
+            })
+            .catch((error) => {
+                console.log(error);
+        });
+    }
+    
 render() {
     return (
         <View style={styles.container}>
@@ -123,27 +120,20 @@ render() {
                     numberOfLines = {3}
                     maxLength = {100} 
                     onChange = { e => this.handleChange(e , 'details')} />
+
+                <Button mode="text" textColor="blue" onPress={() => this.props.navigation.navigate('SignatureScreen')}>
+                        Sign this receipt
+                </Button> 
+
+                {this.props.route.params && <Image
+                resizeMode={"contain"}
+                style={styles.image}
+                source={{ uri: decodeURI(this.props.route.params) }}
+            />}    
             </ScrollView>
-                
-            <Signature
-                onOK={this.handleSave}
-                onEmpty={this.handleEmpty}
-                descriptionText="Sign"
-                clearText="Clear"
-                confirmText="Save"
-                autoClear={true}
-            />
-           
-            <TouchableHighlight
-                    style = {styles.button}
-                    underlayColor= "white"
-                    onPress = {this.handleSubmit}
-                >
-                <Text
-                    style={styles.buttonText}>
-                    Save
-                </Text>
-            </TouchableHighlight>
+            <Button icon="content-save-edit" mode="contained" onPress= {this.handleSubmit}>
+                Save this receipt
+            </Button>
 
              {/* <IconButton
                     icon="share"
@@ -160,33 +150,15 @@ const styles = StyleSheet.create({
         padding: 20,
         flexDirection: 'column',
         justifyContent: 'center',
-        backgroundColor: '#2a8ab7'
     },
-    buttonText: {
-        fontSize: 18,
-        color: '#111',
-        alignSelf: 'center'
-      },
-    button: {
-        height: 45,
-        flexDirection: 'row',
-        backgroundColor:'white',
-        borderColor: 'white',
-        borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 10,
-        marginTop: 10,
-        alignSelf: 'stretch',
-        justifyContent: 'center'
-      },
-      calendarStyle: {
+    calendarStyle: {
         borderWidth: 1,
         borderRadius: 9,
         borderColor: 'gray',
         height: 350,
         marginBottom: 10,
       },
-      theme: {
+    theme: {
         backgroundColor: '#ffffff',
         calendarBackground: '#ffffff',
         textSectionTitleColor: '#b6c1cd',
@@ -212,13 +184,19 @@ const styles = StyleSheet.create({
         textMonthFontSize: 16,
         textDayHeaderFontSize: 16
       },
-      selectedDate: {
+    selectedDate: {
         selected: true, 
         marked: true, 
         selectedColor: 'blue'
     },
     input: {
         marginBottom: 10,
-    }
+    },
+    image: {
+        width: 400,
+        height: 300,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 })
 export default AddReceipts;

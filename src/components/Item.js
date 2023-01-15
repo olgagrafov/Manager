@@ -21,7 +21,7 @@ export default function(props) {
 
         showOrHideDitals = () => {
         
-          if(!props.item.hasSignature) navigation.navigate('Add Receipts')
+         // if(!props.item.hasSignature) navigation.navigate('Add Receipts')
 
             this.setState({
                 isShow: !this.state.isShow,
@@ -29,16 +29,16 @@ export default function(props) {
         }
 
     
-        setDataFB = async () => {
-        const db = getFirestore(appDB);
-        await setDoc(doc(db, 'invoices', props.item.key), {
-            customerName: props.item.customerName,
-            details: props.item.details,
-            invoiceAmount: props.item.invoiceAmount,
-            invoiceDate: props.item.invoiceDate,
-            hasSignature: true,
-            signature: encodeURI(this.state.signature)
-            }); 
+        // setDataFB = async () => {
+        // const db = getFirestore(appDB);
+        // await setDoc(doc(db, 'invoices', props.item.key), {
+        //     customerName: props.item.customerName,
+        //     details: props.item.details,
+        //     invoiceAmount: props.item.invoiceAmount,
+        //     invoiceDate: props.item.invoiceDate,
+        //     hasSignature: true,
+        //     signature: encodeURI(this.state.signature)
+        //     }); 
 
             //  await setDoc(doc(db, 'invoices', "A3UwOUh1t0ilag82JWR5"), {
             //     customerName: "RaRa",
@@ -48,8 +48,8 @@ export default function(props) {
             //     hasSignature: false,
             //    }); 
 
-            NativeModules.DevSettings.reload();
-    }
+         //   NativeModules.DevSettings.reload();
+   // }
 
     render() {
             return (

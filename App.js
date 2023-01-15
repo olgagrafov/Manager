@@ -1,8 +1,9 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import ListOfReceipts from './src/screens/ListOfReceipts';
-import AddReceipts from './src/screens/AddReceipts';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
+import EditNavigator from './src/screens/EditNavigator';
+
 const Tab = createBottomTabNavigator();
 
 export default function App() {
@@ -10,9 +11,11 @@ export default function App() {
   
   return (
     <NavigationContainer>
-      <Tab.Navigator initialRouteName="Signed Receipts">
-        <Tab.Screen name="Signed Receipts" component={ListOfReceipts} initialParams={{ signature: true }} 
+     <Tab.Navigator initialRouteName="Signed Receipts">
+        <Tab.Screen 
+          name="Signed Receipts" component={ListOfReceipts} initialParams={{ signature: true }} 
           options={{
+          
             tabBarIcon: ({color, size, focused}) => {
               return (
                 <MaterialIcon
@@ -37,7 +40,7 @@ export default function App() {
             },
           }}
         />
-        <Tab.Screen name="Add Receipts" component={AddReceipts}
+        <Tab.Screen name="Add Receipt" component={EditNavigator}
           options={{
             tabBarIcon: ({color, size, focused}) => {
               return (
@@ -50,7 +53,9 @@ export default function App() {
             },
           }}
         />
-      </Tab.Navigator>
+      
+      </Tab.Navigator> 
     </NavigationContainer>
   );
+  
 }
