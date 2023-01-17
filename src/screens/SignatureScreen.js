@@ -8,7 +8,10 @@ class SignatureScreen extends Component {
     };
     
     handleSave = (signature) => {
-        this.props.navigation.navigate('Edit Receipt', signature);
+      if(this.props.route.name === 'Sign Receipt')
+        this.props.navigation.navigate('Edit Receipt', {sig: signature});
+      else
+        this.props.navigation.navigate('Create new Receipt',  {sig: signature});
     }
 
     signatureStyle = `

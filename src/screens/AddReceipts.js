@@ -5,6 +5,7 @@ import { Wrap } from 'react-native-flex-layout';
 import { TextInput, Text, Button, IconButton } from 'react-native-paper';
 import { Calendar  } from 'react-native-calendars';
 import { StyleSheet,  View } from 'react-native';
+import { Timestamp } from 'firebase/firestore';
 import { getFirestore, doc, setDoc,collection  } from 'firebase/firestore/lite';
 import appDB from '../database/firebase';
 
@@ -16,6 +17,7 @@ let _day = _date.getDate() < 10 ? `0${ _date.getDate()}` : _date.getDate();
 let minDate =`${_date.getFullYear()}-${_month}-${_day}`;
 let showDate = `${_day}/${_month}/${_date.getFullYear()}`;
 
+
 class AddReceipts extends Component {
     
     state  = {
@@ -26,8 +28,36 @@ class AddReceipts extends Component {
         markedDates: '',
         minDate: minDate,
         showCalendar: false,
-        showDate: showDate
+        showDate: showDate,
+        isEdit: false
     }; 
+
+    componentDidMount() {
+        if(typeof this.props.route.params !== "undefined"){
+            if(this.props.route.params.invoiceDate!== "undefined"){
+                _date = Timestamp.fromMillis(this.props.route.params.invoiceDate).toDate();
+                _month = _date.getMonth() + 1;
+                _month = _month < 10 ? `0${_month}`: _month;
+                _day = _date.getDate() < 10 ? `0${ _date.getDate()}` : _date.getDate();
+                showDate = `${_day}/${_month}/${_date.getFullYear()}`;
+            }
+            this.setState({
+                customerName : this.props.route.params.customerName ? this.props.route.params.customerName : '',
+                details: this.props.route.params.details ? this.props.route.params.details : '',
+                invoiceAmount: this.props.route.params.invoiceAmount ? this.props.route.params.invoiceAmount : '',
+                showDate: showDate,
+                key: this.props.route.params.key ? this.props.route.params.key : '',
+                isEdit: true
+            })
+        }  
+    }
+
+    openSignature = () =>{
+        if(this.state.isEdit)
+            this.props.navigation.navigate('Sign Receipt')
+        else 
+            this.props.navigation.navigate('Sign New Receipt') 
+    }
     
     selectDates = (day) => {
         let _day = day.day < 10 ? `0${ day.day}` : day.day;
@@ -48,31 +78,53 @@ class AddReceipts extends Component {
    
 
     handleSubmit = () => {
-        this.setDataFB();
-        NativeModules.DevSettings.reload();
+        if(this.state.customerName === '')
+            alert("Customer Name is empty");
+        else if(this.state.invoiceAmount === '')
+            alert("Invoice Amount is empty");
+        else {
+            this.setDataFB();
+        }
     };
 
    setDataFB = async () => {
         
         const db = getFirestore(appDB);
         const docRef = (doc(collection(db, "invoices")));
-        const isSignature = (this.props.route.params ? true : false);
-        const signature =  isSignature ?  encodeURI(this.props.route.params) : "";
-
-        await setDoc(docRef, {  
+        const isSignature = (typeof this.props.route.params !== "undefined" && this.props.route.params.sig ? true : false);
+        const signature =  isSignature ?  encodeURI(this.props.route.params.sig) : "";
+     
+        if(this.state.isEdit){
+            await setDoc(doc(db, 'invoices', this.state.key), {
                 customerName: this.state.customerName,
                 details: this.state.details,
                 invoiceAmount:  this.state.invoiceAmount,
                 invoiceDate: this.state.invoiceDate,
                 hasSignature: isSignature,
-                signature: signature }, 
-            { merge: true })
-            .then(() => {
-                console.log("Document has been updated successfully");
+                signature: signature
+            }).then(() => {
+                alert("Document has been edit successfully");
             })
             .catch((error) => {
-                console.log(error);
+                alert(error);
         });
+        } else {
+            await setDoc(docRef, {  
+                    customerName: this.state.customerName,
+                    details: this.state.details,
+                    invoiceAmount:  this.state.invoiceAmount,
+                    invoiceDate: this.state.invoiceDate,
+                    hasSignature: isSignature,
+                    signature: signature }, 
+                { merge: true })
+                .then(() => {
+                    alert("Document has been added successfully");
+                })
+                .catch((error) => {
+                    alert(error);
+            });
+        }
+        NativeModules.DevSettings.reload();
     }
     
 render() {
@@ -85,7 +137,8 @@ render() {
                     onChange = { e => this.handleChange(e , 'customerName')} /> 
         
                 <TextInput style={styles.input}
-                    label = "Invoice Amount" 
+                    label = "Invoice Amount"
+                    value = {this.state.invoiceAmount}
                     keyboardType = "numeric" 
                     maxLength = {5}
                     onChange = { e => this.handleChange(e , 'invoiceAmount')} />
@@ -121,25 +174,19 @@ render() {
                     maxLength = {100} 
                     onChange = { e => this.handleChange(e , 'details')} />
 
-                <Button mode="text" textColor="blue" onPress={() => this.props.navigation.navigate('SignatureScreen')}>
+                <Button mode="text" textColor="blue" onPress = {this.openSignature}>
                         Sign this receipt
                 </Button> 
 
-                {this.props.route.params && <Image
-                resizeMode={"contain"}
-                style={styles.image}
-                source={{ uri: decodeURI(this.props.route.params) }}
-            />}    
+                { this.props.route.params && <Image
+                    resizeMode={"contain"}
+                    style={styles.image}
+                    source={{ uri: decodeURI(this.props.route.params.sig) }}
+                 />}    
             </ScrollView>
-            <Button icon="content-save-edit" mode="contained" onPress= {this.handleSubmit}>
+            <Button icon="content-save-edit" mode="contained" onPress = {this.handleSubmit}>
                 Save this receipt
             </Button>
-
-             {/* <IconButton
-                    icon="share"
-                    size={20}
-                    onPress={() => console.log('Pressed')}
-                />    */}
         </View>
     );}
 

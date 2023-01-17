@@ -26,16 +26,17 @@ class Receipt extends Component {
   render() {
     return(
       <>
-        <Text  style={styles.ditalstext}> invoice date: {this.state.invoiceDate} </Text>
+        <Text style={styles.ditalstext}> invoice date: {this.state.invoiceDate} </Text>
         <Text style={styles.ditalstext}> details: {this.props.item.details} </Text> 
-        <View style={styles.container}>
         {this.props.item.hasSignature &&
-        <Image
-              resizeMode={"contain"}
-              style={styles.image}
-              source={{ uri: decodeURI(this.props.item.signature) }}
-          /> }
-        </View>
+          <View style={styles.container}>
+            <Image
+                  resizeMode={"contain"}
+                  style={styles.image}
+                  source={{ uri: decodeURI(this.props.item.signature) }}
+              /> 
+          </View>
+        }
       </>
     )
   }
