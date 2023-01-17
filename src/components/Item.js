@@ -3,15 +3,12 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeModules } from "react-native";
 import { Text, StyleSheet, TouchableOpacity, View, Share } from 'react-native';
 import { IconButton } from 'react-native-paper';
-import { getFirestore, doc, setDoc  } from 'firebase/firestore/lite';
+import { getFirestore, doc, deleteDoc  } from 'firebase/firestore/lite';
 import appDB from '../database/firebase';
 import Receipt from './Receipt';
-import { endAt } from 'firebase/firestore';
-
 
 export default function(props) {
    const navigation = useNavigation();
-
 
     class Item extends Component {   
 
@@ -22,9 +19,6 @@ export default function(props) {
 
 
         showOrHideDitals = () => {
-        
-         // if(!props.item.hasSignature) navigation.navigate('Add Receipts')
-
             this.setState({
                 isShow: !this.state.isShow,
             });
@@ -39,35 +33,20 @@ export default function(props) {
 
         editInvoce = () => {
             navigation.navigate('Edit Receipt', props.item);
-           // console.log(navigation)
-          // navigation.push('SignatureScreen')
-         // navigation.navigate('Add Receipt', { signature: true });
-           // navigation.navigate( 'Add Receipt',  { screen:  'SignatureScreen'});
-           // this.props.navigation.navigate('SignatureScreen')
         }
 
     
-        // setDataFB = async () => {
-        // const db = getFirestore(appDB);
-        // await setDoc(doc(db, 'invoices', props.item.key), {
-        //     customerName: props.item.customerName,
-        //     details: props.item.details,
-        //     invoiceAmount: props.item.invoiceAmount,
-        //     invoiceDate: props.item.invoiceDate,
-        //     hasSignature: true,
-        //     signature: encodeURI(this.state.signature)
-        //     }); 
-
-            //  await setDoc(doc(db, 'invoices', "A3UwOUh1t0ilag82JWR5"), {
-            //     customerName: "RaRa",
-            //     details: "dtfrdgrgr dsgewreger",
-            //     invoiceAmount: 5545,
-            //     invoiceDate: null,
-            //     hasSignature: false,
-            //    }); 
-
-         //   NativeModules.DevSettings.reload();
-   // }
+        deleteItem = async () => {
+            const db = getFirestore(appDB);
+            await deleteDoc(doc(db, 'invoices', props.item.key))
+            .then(() => {
+                alert("Document has been deleted successfully");
+            })
+            .catch((error) => {
+                alert(error);
+            });
+            NativeModules.DevSettings.reload();
+        }
 
     render() {
             return (
@@ -78,11 +57,19 @@ export default function(props) {
                                 {props.item.customerName}
                             </Text>
                             {props.item.hasSignature 
-                            ? (<IconButton
-                                    icon="share-variant-outline"
-                                    size={20}
-                                    onPress={this.shareItem}
-                                />)
+                            ?  (<>
+                                    <IconButton
+                                            icon="share-variant-outline"
+                                            size={20}
+                                            onPress={this.shareItem}
+                                        />
+                                    <IconButton
+                                            icon="trash-can-outline"
+                                            size={20}
+                                            onPress={this.deleteItem}
+                                    />
+                                </>
+                                )
                                 :
                                 (<IconButton
                                     icon="draw-pen"
